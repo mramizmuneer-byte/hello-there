@@ -2425,6 +2425,7 @@ export class Engine {
       }
     }
     ctx.globalAlpha = 1;
+    if (groundOnly) return;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const p of this.popups) {
