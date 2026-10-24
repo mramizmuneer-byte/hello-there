@@ -136,7 +136,7 @@ export function drawObstacle3D(
     let dw = w * (ph.cfg.widthFrac ?? 1);
     let dh = dw * ar * (ph.cfg.squash ?? 1);
     if (ph.cfg.fit === "height") {
-      dh = H * 1.05;
+      dh = H * (ph.cfg.heightFrac ?? 1.05);
       dw = dh / ar;
     }
     // slide gates: duct body sits at the gate beam, rods reach up out of frame
