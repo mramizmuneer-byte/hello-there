@@ -8,11 +8,12 @@ import rider from "@/assets/ob_rider.png";
 import { loadSprite, type Sprite } from "./sprites";
 import type { ObKind } from "./props";
 
-/** fit: "width" stretches to lane width; "height" fits the obstacle height; squash flattens ground decals. */
+/** fit: "width" stretches to lane width; "height" fits the obstacle height (× heightFrac); squash flattens ground decals. */
 export interface ObPhoto {
   url: string;
   fit: "width" | "height";
   widthFrac?: number;
+  heightFrac?: number;
   squash?: number;
 }
 
@@ -24,7 +25,7 @@ const PHOTOS: Partial<Record<ObKind, ObPhoto>> = {
   plant: { url: files, fit: "width", widthFrac: 0.8 },
   trolley: { url: trolley, fit: "width" },
   ac: { url: trolley, fit: "width" },
-  chair: { url: chair, fit: "height" },
+  chair: { url: chair, fit: "height", heightFrac: 0.6 },
   pipe: { url: duct, fit: "width" },
   email: { url: duct, fit: "width" },
   plane: { url: duct, fit: "width" },
