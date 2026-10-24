@@ -1780,6 +1780,8 @@ export class Engine {
       };
       drawUntil(T.playerHalfDepth);
       if (this.flashlight > 0 && this.isPlayable()) this.drawFlashlight(ctx);
+      this.drawParticles(ctx, true);
+      ctx.globalAlpha = 1;
       this.drawPlayer(ctx);
       drawUntil(-Infinity);
       this.drawWarnings(ctx);
@@ -2057,8 +2059,13 @@ export class Engine {
       return pick(this.frames.run, u - Math.floor(u));
     }
     if (this.anim === "AIR") return pick(this.frames.jump, this.jumpT / this.airT);
+    if (this.anim === "JUMP_START") return pick(this.frames.jump, 0);
+    if (this.anim === "LAND") return pick(this.frames.jump, 0.99);
     if (this.anim === "DUCK" || this.anim === "DUCK_START") return pick(this.frames.slide, Math.min(0.99, this.duckTime / T.duckTime));
-    return null;
+    if (this.anim === "DUCK_END") return pick(this.frames.slide, 0);
+    // Any other state still uses the new-outfit frames (never the old fallback figure).
+    const u = this.phi / (Math.PI * 2);
+    return pick(this.frames.run, u - Math.floor(u));
   }
 
   private layerPose(): LPose {
@@ -2395,20 +2402,23 @@ export class Engine {
     ctx.restore();
   }
 
-  private drawParticles(ctx: CanvasRenderingContext2D) {
+  /** groundOnly: dust/rings drawn beneath the runner so they never wash over his body. */
+  private drawParticles(ctx: CanvasRenderingContext2D, groundOnly = false) {
     for (const p of this.particles) {
       if (!p.active) continue;
+      const isGround = p.kind === "dust" || p.kind === "ring";
+      if (isGround !== groundOnly) continue;
       const a = Math.max(0, p.life / p.max);
       if (p.kind === "ring") {
         const r = p.size + (1 - a) * 50;
-        ctx.globalAlpha = a;
+        ctx.globalAlpha = a * 0.6;
         ctx.strokeStyle = p.col;
         ctx.lineWidth = 3 * a + 1;
         ctx.beginPath();
         ctx.ellipse(p.x, p.y, r, r * 0.35, 0, 0, Math.PI * 2);
         ctx.stroke();
       } else if (p.kind === "dust") {
-        ctx.globalAlpha = a * 0.5;
+        ctx.globalAlpha = a * 0.3;
         ctx.fillStyle = p.col;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -2420,6 +2430,7 @@ export class Engine {
       }
     }
     ctx.globalAlpha = 1;
+    if (groundOnly) return;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const p of this.popups) {
