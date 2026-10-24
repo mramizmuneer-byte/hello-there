@@ -70,7 +70,7 @@ export const RIG_BLEND_TAU = 0.026;
  * Optional frame-by-frame sprites (back view, transparent, feet at the bottom).
  * Loaded from the CDN asset pointers below; they replace the rig for those states.
  */
-const runMods = import.meta.glob<string>("../assets/fathu_run_0*.png", { eager: true, import: "default" }) as Record<string, string>;
+const runMods = import.meta.glob<string>("../assets/fathu_run_*.png", { eager: true, import: "default" }) as Record<string, string>;
 const jumpMods = import.meta.glob<string>("../assets/fathu_jump_0*.png", { eager: true, import: "default" }) as Record<string, string>;
 const slideMods = import.meta.glob<string>("../assets/fathu_slide_0*.png", { eager: true, import: "default" }) as Record<string, string>;
 const urls = (m: Record<string, string>) => Object.keys(m).sort().map((k) => m[k]);
