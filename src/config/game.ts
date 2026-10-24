@@ -161,7 +161,7 @@ export function slabSpeed(d: number): number {
   for (const [a, b, va, vb] of SPEED_SLABS) {
     if (d < b) return va + ((vb - va) * Math.max(0, d - a)) / (b - a);
   }
-  return 39;
+  return 40;
 }
 export const STAGE2_LENGTH = 260; // metres of tree descent
 export const SHIELD_SECONDS = 5;
