@@ -1780,6 +1780,8 @@ export class Engine {
       };
       drawUntil(T.playerHalfDepth);
       if (this.flashlight > 0 && this.isPlayable()) this.drawFlashlight(ctx);
+      this.drawParticles(ctx, true);
+      ctx.globalAlpha = 1;
       this.drawPlayer(ctx);
       drawUntil(-Infinity);
       this.drawWarnings(ctx);
@@ -2395,20 +2397,23 @@ export class Engine {
     ctx.restore();
   }
 
-  private drawParticles(ctx: CanvasRenderingContext2D) {
+  /** groundOnly: dust/rings drawn beneath the runner so they never wash over his body. */
+  private drawParticles(ctx: CanvasRenderingContext2D, groundOnly = false) {
     for (const p of this.particles) {
       if (!p.active) continue;
+      const isGround = p.kind === "dust" || p.kind === "ring";
+      if (isGround !== groundOnly) continue;
       const a = Math.max(0, p.life / p.max);
       if (p.kind === "ring") {
         const r = p.size + (1 - a) * 50;
-        ctx.globalAlpha = a;
+        ctx.globalAlpha = a * 0.6;
         ctx.strokeStyle = p.col;
         ctx.lineWidth = 3 * a + 1;
         ctx.beginPath();
         ctx.ellipse(p.x, p.y, r, r * 0.35, 0, 0, Math.PI * 2);
         ctx.stroke();
       } else if (p.kind === "dust") {
-        ctx.globalAlpha = a * 0.5;
+        ctx.globalAlpha = a * 0.3;
         ctx.fillStyle = p.col;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
