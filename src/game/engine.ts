@@ -2059,8 +2059,13 @@ export class Engine {
       return pick(this.frames.run, u - Math.floor(u));
     }
     if (this.anim === "AIR") return pick(this.frames.jump, this.jumpT / this.airT);
+    if (this.anim === "JUMP_START") return pick(this.frames.jump, 0);
+    if (this.anim === "LAND") return pick(this.frames.jump, 0.99);
     if (this.anim === "DUCK" || this.anim === "DUCK_START") return pick(this.frames.slide, Math.min(0.99, this.duckTime / T.duckTime));
-    return null;
+    if (this.anim === "DUCK_END") return pick(this.frames.slide, 0);
+    // Any other state still uses the new-outfit frames (never the old fallback figure).
+    const u = this.phi / (Math.PI * 2);
+    return pick(this.frames.run, u - Math.floor(u));
   }
 
   private layerPose(): LPose {
