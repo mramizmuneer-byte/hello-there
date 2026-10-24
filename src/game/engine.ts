@@ -837,11 +837,7 @@ export class Engine {
   /* ---------------- update ---------------- */
 
   private speedCurve() {
-    const k = clamp01(this.runTime / T.rampTime);
-    const e = 1 - (1 - k) * (1 - k);
-    let v = T.baseSpeed + (T.maxSpeed - T.baseSpeed) * e;
-    if (this.phase === "run1") v *= T.stage1SpeedFactor;
-    else if (this.phase === "run2") v *= T.stage2SpeedFactor;
+    let v = slabSpeed(this.distance);
     if (this.form108 > 0) v *= FORM108_SPEED;
     return v * this.flags.speed;
   }
@@ -1029,15 +1025,12 @@ export class Engine {
     }
 
     if (this.phase === "run1" && this.stageDist >= STAGE1_LENGTH) {
-      this.phase = "leapPrompt";
-      this.leapMeter = 0;
-      this.leapDir = 1;
-      this.duckHeld = false;
-      this.airborne = false;
-      this.yUp = 0;
-      this.setAnim("RUN");
+      // Leap stage removed: corridor flows straight onto the street.
+      this.phase = "run3";
+      this.stageDist = 0;
+      this.segment = pick(ROAD_SEGMENTS);
+      this.segmentUntil = this.distance + 220;
       this.clearWorld();
-      audio.play("pop");
       this.emit(true);
     }
     if (this.phase === "run2" && this.stageDist >= STAGE2_LENGTH) {
@@ -2246,7 +2239,7 @@ export class Engine {
     const side = i === 0 ? -1 : 1;
     const feet = project(this.rx, 0, 0);
     const x = feet.x * 0.4 + CX * 0.6 + side * 92;
-    const bob = Math.abs(Math.sin(this.t * 9 + i * 1.3)) * 6;
+    const bob = this.phase === "countdown" ? 0 : Math.abs(Math.sin(this.t * 9 + i * 1.3)) * 6;
     const y = VH - 70 - bob + (1 - intro) * 80 + (1 - this.bossPres[i]) * 320;
     return { x, y, scale, headY: y - 100 * scale };
   }

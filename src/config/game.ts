@@ -140,7 +140,28 @@ export const SCORING = {
   leaf: 5,
 };
 
-export const STAGE1_LENGTH = 420; // metres of corridor
+export const STAGE1_LENGTH = 200; // metres of corridor
+
+/** Distance-based speed slabs: [startMetre, endMetre, startSpeed, endSpeed] (m/s). */
+export const SPEED_SLABS: [number, number, number, number][] = [
+  [0, 200, 11, 15],
+  [200, 600, 15, 20],
+  [600, 1200, 20, 24],
+  [1200, 2000, 24, 27],
+  [2000, 3000, 27, 29],
+  [3000, 4200, 29, 31],
+  [4200, 5600, 31, 33],
+  [5600, 7200, 33, 35],
+  [7200, 9000, 35, 37],
+  [9000, 12000, 37, 39],
+];
+
+export function slabSpeed(d: number): number {
+  for (const [a, b, va, vb] of SPEED_SLABS) {
+    if (d < b) return va + ((vb - va) * Math.max(0, d - a)) / (b - a);
+  }
+  return 39;
+}
 export const STAGE2_LENGTH = 260; // metres of tree descent
 export const SHIELD_SECONDS = 5;
 export const FLASHLIGHT_SECONDS = 5;
