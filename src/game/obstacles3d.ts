@@ -8,6 +8,7 @@ import { drawBox, frontQuad, groundQuad, poly } from "./draw3d";
 import { project } from "./proj";
 import type { ObKind } from "./props";
 import { blrArt } from "./bangalore";
+import { obPhoto } from "./obPhotos";
 
 export type ObCat = "jump" | "slide" | "block";
 
@@ -127,6 +128,25 @@ export function drawObstacle3D(
   const look = OB_LOOK[kind];
   const midX = (b.x0 + b.x1) / 2;
   const w = b.x1 - b.x0;
+  const ph = obPhoto(kind);
+  if (ph && ph.s.ready && ph.s.img) {
+    const img = ph.s.img;
+    const ar = img.height / img.width;
+    const H = look.cat === "slide" ? b.y1 : b.y1 - b.y0;
+    let dw = w * (ph.cfg.widthFrac ?? 1);
+    let dh = dw * ar * (ph.cfg.squash ?? 1);
+    if (ph.cfg.fit === "height") {
+      dh = H * 1.05;
+      dw = dh / ar;
+    }
+    // slide gates: duct body sits at the gate beam, rods reach up out of frame
+    const bottom = look.cat === "slide" ? b.y0 : 0;
+    const top = look.cat === "slide" ? Math.max(b.y1 + 1.2, bottom + dh) : bottom + dh;
+    const tl = project(midX - dw / 2, top, b.z0);
+    const br = project(midX + dw / 2, bottom, b.z0);
+    ctx.drawImage(img, tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+    return;
+  }
   if (look.cat === "slide") {
     // two thick posts + beam with a red stripe
     const pw = 0.16;
@@ -189,12 +209,10 @@ export function drawObstacle3D(
     const art = blrArt();
     const s = kind === "auto" ? art.auto : art.bus;
     if (s.ready && s.img) {
-      // dark body sides for depth, then the real rear photo on the camera face
-      const body = kind === "auto" ? { front: "#1d1f1c", top: "#2a2c28", side: "#2b2a1e" } : { front: "#1f7fb8", top: "#5fb7e3", side: "#1a6c9c" };
+      // real rear photo only — no fake coloured box behind it
       const drawW = kind === "auto" ? w * 0.9 : w;
       const drawH = drawW * (s.img.height / s.img.width);
       const x0 = midX - drawW / 2;
-      drawBox(ctx, x0 + 0.08, x0 + drawW - 0.08, 0.15, drawH * 0.8, b.z0 + 0.1, b.z1, body, camX, camY);
       const jit = Math.sin(t * 31 + b.z1) * 0.012;
       const tl = project(x0, drawH + jit, b.z0);
       const br = project(x0 + drawW, jit, b.z0);

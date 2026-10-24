@@ -154,6 +154,7 @@ export const SPEED_SLABS: [number, number, number, number][] = [
   [5600, 7200, 33, 35],
   [7200, 9000, 35, 37],
   [9000, 12000, 37, 39],
+  [12000, 13000, 39, 40],
 ];
 
 export function slabSpeed(d: number): number {
