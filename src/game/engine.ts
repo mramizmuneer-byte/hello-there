@@ -2051,7 +2051,11 @@ export class Engine {
       return set[Math.min(set.length - 1, Math.max(0, Math.floor(u * set.length)))].img;
     };
     if (this.phase === "dying" || this.flags.pose) return null;
-    if (this.anim === "RUN") return pick(this.frames.run, (this.runFrameT * 24 / 8) % 1);
+    // One full two-step stride = 2π of gait phase, locked to footsteps.
+    if (this.anim === "RUN") {
+      const u = this.phi / (Math.PI * 2);
+      return pick(this.frames.run, u - Math.floor(u));
+    }
     if (this.anim === "AIR") return pick(this.frames.jump, this.jumpT / this.airT);
     if (this.anim === "DUCK" || this.anim === "DUCK_START") return pick(this.frames.slide, Math.min(0.99, this.duckTime / T.duckTime));
     return null;
