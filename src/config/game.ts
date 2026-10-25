@@ -8,7 +8,7 @@ export const FIRM = {
   subtitle: "CHARTERED ACCOUNTANTS",
 };
 
-export const TITLE = "ESCAPE FROM M&S";
+export const TITLE = "RUN-FATHAH-RUN";
 export const TAGLINE = "Escape before he says it again.";
 export const CREDIT = "Starring @fathu_.xb · Made by Ramiz, Don & Navaneeth";
 export const GIFT_LINE = "A parting gift from the team";
@@ -33,7 +33,7 @@ export const MILESTONES: string[] = [
   "500m: Officially out of the building, Fathu!",
   "1000m: No emails. No calls. Suspicious. Even 'What PAA' has gone quiet.",
   "1500m: Even Silk Board traffic can't stop him!",
-  "2000m: Murali got a scooter and Sumeet got an auto!",
+  "2000m: Murali and Sumeet jumped into their XUVs!",
 ];
 
 /** Cycled after the fixed milestones above run out. */
@@ -41,7 +41,7 @@ export const MILESTONES_EXTRA: string[] = [
   "Still running. The tracker remains un-updated.",
   "Somewhere a client call is starting without him.",
   "The chai stall salutes you.",
-  "Two bosses, one scooter, zero chance.",
+  "Two bosses, two XUVs, zero chance.",
   "The GST return has given up too.",
   "Silk Board could not hold him. Nothing can.",
   "Another 500m of glorious unemployment.",
@@ -166,7 +166,7 @@ export function slabSpeed(d: number): number {
 export const STAGE2_LENGTH = 260; // metres of tree descent
 export const SHIELD_SECONDS = 5;
 export const FLASHLIGHT_SECONDS = 5;
-export const CLEAN_RUN_RECOVER_SECONDS = 15;
+export const CLEAN_RUN_RECOVER_SECONDS = 6;
 export const BOSS_VEHICLE_AT = 2000;
 export const FORM108_SECONDS = 4;
 export const FORM108_SPEED = 1.35;

@@ -62,6 +62,8 @@ import {
 import { POSES } from "@/config/anim";
 import { ROAD_SEGMENTS, type RoadSegment, SEGMENT_LABELS, drawNameplate, drawTreeCanopy } from "./scenery";
 import { loadFathu, loadSprite, type Sprite } from "./sprites";
+import xuvBlack from "@/assets/xuv_black.png";
+import xuvWhite from "@/assets/xuv_white.png";
 import { drawCorridorWorld, drawDeadEndWorld, drawRoadWorld } from "./world";
 
 const TURN_FRAMES = 32;
@@ -171,7 +173,7 @@ interface Toast {
 const BEST_KEY = "fathu-escape-best";
 const HINTS_KEY = "fathu-escape-hints";
 /** Boss scale per chase step: far, near, about to catch. */
-const BOSS_STEPS = [0.85, 1.0, 1.18];
+const BOSS_STEPS = [0.85, 1.05, 1.18];
 /** Who chases at a distance: 0 = Murali only, 1 = Sumeet only, 2 = both. Cycles every 3000 m. */
 export function crewAt(distance: number): 0 | 1 | 2 {
   return (Math.floor(Math.max(0, distance) / 1000) % 3) as 0 | 1 | 2;
@@ -208,7 +210,7 @@ const POOLS: Record<number, { jump: ObKind[]; block: ObKind[]; slide: ObKind[] }
   2: { jump: [], block: ["branch", "crow"], slide: ["vine"] },
   3: {
     jump: ["pothole", "breaker"],
-    block: ["auto", "scooter", "cow", "dog", "rider", "cart", "walker"],
+    block: ["auto", "cow", "dog", "cart", "walker"],
     slide: ["cable"],
   },
 };
@@ -709,7 +711,7 @@ export class Engine {
       letters: this.letters,
       books: this.books,
       score: this.score,
-      lives: Math.max(0, 3 - this.hits),
+      lives: Math.max(0, 2 - this.hits),
       chase: Math.min(1, this.chaseVis / 2),
       dnd: this.dndShield,
       shield: this.paaShield / SHIELD_SECONDS,
@@ -991,12 +993,12 @@ export class Engine {
       }
     }
 
-    if (this.phase === "run3" && this.hits > 0) {
+    if ((this.phase === "run3" || this.phase === "run1") && this.hits > 0) {
       this.cleanTimer += dt;
       if (this.cleanTimer >= CLEAN_RUN_RECOVER_SECONDS) {
         this.cleanTimer = 0;
         this.hits--;
-        this.pushToast("The bosses fell back!", false);
+        this.pushToast("The boss fell back!", false);
       }
     }
     this.chaseVis += (Math.min(2, this.hits) - this.chaseVis) * Math.min(1, dt * 3);
@@ -1558,7 +1560,7 @@ export class Engine {
     this.bubbleTimer = 2.6;
     const p = project(this.laneX, 1.1, 0);
     this.sparks(p.x, p.y, "#ffffff", 14);
-    if (this.hits >= 3 && !this.flags.god) this.gameOver();
+    if (this.hits >= 2 && !this.flags.god) this.gameOver();
   }
 
   private gameOver() {
@@ -2241,7 +2243,9 @@ export class Engine {
     const feet = project(this.rx, 0, 0);
     const x = feet.x * 0.4 + CX * 0.6 + side * 92;
     const bob = this.phase === "countdown" ? 0 : Math.abs(Math.sin(this.t * 9 + i * 1.3)) * 6;
-    const y = VH - 70 - bob + (1 - intro) * 80 + (1 - this.bossPres[i]) * 320;
+    // Subway-Surfers chase: off-screen while clean, surge in on a hit
+    const hidden = this.phase === "run1" || this.phase === "run3" ? 1 - Math.min(1, this.chaseVis) : 0;
+    const y = VH - 70 - bob + (1 - intro) * 80 + (1 - this.bossPres[i]) * 320 + hidden * 380;
     return { x, y, scale, headY: y - 100 * scale };
   }
 
@@ -2260,7 +2264,12 @@ export class Engine {
       const onVehicle = this.distance >= BOSS_VEHICLE_AT && this.phase === "run3";
       let y = L.y;
       if (onVehicle) {
-        this.drawVehicle(ctx, i, L.x, y, L.scale);
+        const carH = this.drawVehicle(ctx, i, L.x, y, L.scale);
+        if (carH > 0) {
+          // boss is inside the XUV: label the car instead of drawing them on the roof
+          drawNameTag(ctx, cfg.name, L.x, y - carH - 10 * L.scale, Math.max(0.7, L.scale * 0.8));
+          continue;
+        }
         y -= 30 * L.scale;
       }
       const run = this.bossRun[i];
@@ -2327,7 +2336,26 @@ export class Engine {
     else this.bubbleAt(ctx, CATCHPHRASE_SHOUT, hx - 40, hy - 30, hx - 18, hy + 4, true, false, 1, BOSSES[1].name, "left");
   }
 
-  private drawVehicle(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, scale: number) {
+  private xuv: Sprite[] = [loadSprite(xuvBlack), loadSprite(xuvWhite)];
+
+  private drawVehicle(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, scale: number): number {
+    const car = this.xuv[i];
+    if (car?.ready && car.img) {
+      // Murali: black XUV700, Sumeet: white XUV700 (real rear photos)
+      const w = 190 * scale;
+      const h = (w * car.img.height) / car.img.width;
+      const rum = Math.sin(this.t * 30 + i) * 0.8;
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.ellipse(x, y, w * 0.5, 10 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.drawImage(car.img, x - w / 2, y - h + rum, w, h);
+      ctx.restore();
+      return h;
+    }
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
@@ -2394,6 +2422,7 @@ export class Engine {
       circle(ctx, 46, -36 + wob, 5);
     }
     ctx.restore();
+    return 0;
   }
 
   /** groundOnly: dust/rings drawn beneath the runner so they never wash over his body. */
