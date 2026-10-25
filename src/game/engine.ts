@@ -62,6 +62,8 @@ import {
 import { POSES } from "@/config/anim";
 import { ROAD_SEGMENTS, type RoadSegment, SEGMENT_LABELS, drawNameplate, drawTreeCanopy } from "./scenery";
 import { loadFathu, loadSprite, type Sprite } from "./sprites";
+import xuvBlack from "@/assets/xuv_black.png";
+import xuvWhite from "@/assets/xuv_white.png";
 import { drawCorridorWorld, drawDeadEndWorld, drawRoadWorld } from "./world";
 
 const TURN_FRAMES = 32;
@@ -2241,7 +2243,9 @@ export class Engine {
     const feet = project(this.rx, 0, 0);
     const x = feet.x * 0.4 + CX * 0.6 + side * 92;
     const bob = this.phase === "countdown" ? 0 : Math.abs(Math.sin(this.t * 9 + i * 1.3)) * 6;
-    const y = VH - 70 - bob + (1 - intro) * 80 + (1 - this.bossPres[i]) * 320;
+    // Subway-Surfers chase: off-screen while clean, surge in on a hit
+    const hidden = this.phase === "run1" || this.phase === "run3" ? 1 - Math.min(1, this.chaseVis) : 0;
+    const y = VH - 70 - bob + (1 - intro) * 80 + (1 - this.bossPres[i]) * 320 + hidden * 380;
     return { x, y, scale, headY: y - 100 * scale };
   }
 
@@ -2327,7 +2331,26 @@ export class Engine {
     else this.bubbleAt(ctx, CATCHPHRASE_SHOUT, hx - 40, hy - 30, hx - 18, hy + 4, true, false, 1, BOSSES[1].name, "left");
   }
 
+  private xuv: Sprite[] = [loadSprite(xuvBlack), loadSprite(xuvWhite)];
+
   private drawVehicle(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, scale: number) {
+    const car = this.xuv[i];
+    if (car?.ready && car.img) {
+      // Murali: black XUV700, Sumeet: white XUV700 (real rear photos)
+      const w = 190 * scale;
+      const h = (w * car.img.height) / car.img.width;
+      const rum = Math.sin(this.t * 30 + i) * 0.8;
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.ellipse(x, y, w * 0.5, 10 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.drawImage(car.img, x - w / 2, y - h + rum, w, h);
+      ctx.restore();
+      return;
+    }
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);

@@ -152,8 +152,6 @@ export default function Game() {
           <div className="pointer-events-none absolute inset-0 text-white">
             <div className="absolute left-3 top-3 leading-none">
               <div className="text-4xl" style={outline}>{s.distance}<span className="text-xl"> m</span></div>
-              <div className="mt-1 flex gap-0.5 text-lg">
-              </div>
             </div>
             <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1">
               <span className="inline-block h-4 w-4 rounded-full border-2 border-amber-200 bg-amber-400" />
