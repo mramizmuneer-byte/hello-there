@@ -993,12 +993,12 @@ export class Engine {
       }
     }
 
-    if (this.phase === "run3" && this.hits > 0) {
+    if ((this.phase === "run3" || this.phase === "run1") && this.hits > 0) {
       this.cleanTimer += dt;
       if (this.cleanTimer >= CLEAN_RUN_RECOVER_SECONDS) {
         this.cleanTimer = 0;
         this.hits--;
-        this.pushToast("The bosses fell back!", false);
+        this.pushToast("The boss fell back!", false);
       }
     }
     this.chaseVis += (Math.min(2, this.hits) - this.chaseVis) * Math.min(1, dt * 3);

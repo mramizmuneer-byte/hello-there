@@ -166,7 +166,7 @@ export function slabSpeed(d: number): number {
 export const STAGE2_LENGTH = 260; // metres of tree descent
 export const SHIELD_SECONDS = 5;
 export const FLASHLIGHT_SECONDS = 5;
-export const CLEAN_RUN_RECOVER_SECONDS = 15;
+export const CLEAN_RUN_RECOVER_SECONDS = 6;
 export const BOSS_VEHICLE_AT = 2000;
 export const FORM108_SECONDS = 4;
 export const FORM108_SPEED = 1.35;
