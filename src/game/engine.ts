@@ -2264,7 +2264,12 @@ export class Engine {
       const onVehicle = this.distance >= BOSS_VEHICLE_AT && this.phase === "run3";
       let y = L.y;
       if (onVehicle) {
-        this.drawVehicle(ctx, i, L.x, y, L.scale);
+        const carH = this.drawVehicle(ctx, i, L.x, y, L.scale);
+        if (carH > 0) {
+          // boss is inside the XUV: label the car instead of drawing them on the roof
+          drawNameTag(ctx, cfg.name, L.x, y - carH - 10 * L.scale, Math.max(0.7, L.scale * 0.8));
+          continue;
+        }
         y -= 30 * L.scale;
       }
       const run = this.bossRun[i];
@@ -2333,7 +2338,7 @@ export class Engine {
 
   private xuv: Sprite[] = [loadSprite(xuvBlack), loadSprite(xuvWhite)];
 
-  private drawVehicle(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, scale: number) {
+  private drawVehicle(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, scale: number): number {
     const car = this.xuv[i];
     if (car?.ready && car.img) {
       // Murali: black XUV700, Sumeet: white XUV700 (real rear photos)
@@ -2349,7 +2354,7 @@ export class Engine {
       ctx.globalAlpha = 1;
       ctx.drawImage(car.img, x - w / 2, y - h + rum, w, h);
       ctx.restore();
-      return;
+      return h;
     }
     ctx.save();
     ctx.translate(x, y);
@@ -2417,6 +2422,7 @@ export class Engine {
       circle(ctx, 46, -36 + wob, 5);
     }
     ctx.restore();
+    return 0;
   }
 
   /** groundOnly: dust/rings drawn beneath the runner so they never wash over his body. */
