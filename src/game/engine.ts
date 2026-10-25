@@ -171,7 +171,7 @@ interface Toast {
 const BEST_KEY = "fathu-escape-best";
 const HINTS_KEY = "fathu-escape-hints";
 /** Boss scale per chase step: far, near, about to catch. */
-const BOSS_STEPS = [0.85, 1.0, 1.18];
+const BOSS_STEPS = [0.85, 1.05, 1.18];
 /** Who chases at a distance: 0 = Murali only, 1 = Sumeet only, 2 = both. Cycles every 3000 m. */
 export function crewAt(distance: number): 0 | 1 | 2 {
   return (Math.floor(Math.max(0, distance) / 1000) % 3) as 0 | 1 | 2;
@@ -208,7 +208,7 @@ const POOLS: Record<number, { jump: ObKind[]; block: ObKind[]; slide: ObKind[] }
   2: { jump: [], block: ["branch", "crow"], slide: ["vine"] },
   3: {
     jump: ["pothole", "breaker"],
-    block: ["auto", "scooter", "cow", "dog", "rider", "cart", "walker"],
+    block: ["auto", "cow", "dog", "cart", "walker"],
     slide: ["cable"],
   },
 };
@@ -709,7 +709,7 @@ export class Engine {
       letters: this.letters,
       books: this.books,
       score: this.score,
-      lives: Math.max(0, 3 - this.hits),
+      lives: Math.max(0, 2 - this.hits),
       chase: Math.min(1, this.chaseVis / 2),
       dnd: this.dndShield,
       shield: this.paaShield / SHIELD_SECONDS,
@@ -1558,7 +1558,7 @@ export class Engine {
     this.bubbleTimer = 2.6;
     const p = project(this.laneX, 1.1, 0);
     this.sparks(p.x, p.y, "#ffffff", 14);
-    if (this.hits >= 3 && !this.flags.god) this.gameOver();
+    if (this.hits >= 2 && !this.flags.god) this.gameOver();
   }
 
   private gameOver() {

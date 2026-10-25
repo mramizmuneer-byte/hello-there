@@ -8,7 +8,7 @@ export const FIRM = {
   subtitle: "CHARTERED ACCOUNTANTS",
 };
 
-export const TITLE = "ESCAPE FROM M&S";
+export const TITLE = "RUN-FATHAH-RUN";
 export const TAGLINE = "Escape before he says it again.";
 export const CREDIT = "Starring @fathu_.xb · Made by Ramiz, Don & Navaneeth";
 export const GIFT_LINE = "A parting gift from the team";

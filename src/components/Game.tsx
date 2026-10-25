@@ -153,7 +153,6 @@ export default function Game() {
             <div className="absolute left-3 top-3 leading-none">
               <div className="text-4xl" style={outline}>{s.distance}<span className="text-xl"> m</span></div>
               <div className="mt-1 flex gap-0.5 text-lg">
-                {[0, 1, 2].map((i) => <span key={i} className={i < s.lives ? "" : "opacity-25 grayscale"}>❤️</span>)}
               </div>
             </div>
             <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1">
