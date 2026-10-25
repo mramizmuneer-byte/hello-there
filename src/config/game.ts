@@ -33,7 +33,7 @@ export const MILESTONES: string[] = [
   "500m: Officially out of the building, Fathu!",
   "1000m: No emails. No calls. Suspicious. Even 'What PAA' has gone quiet.",
   "1500m: Even Silk Board traffic can't stop him!",
-  "2000m: Murali got a scooter and Sumeet got an auto!",
+  "2000m: Murali and Sumeet jumped into their XUVs!",
 ];
 
 /** Cycled after the fixed milestones above run out. */
@@ -41,7 +41,7 @@ export const MILESTONES_EXTRA: string[] = [
   "Still running. The tracker remains un-updated.",
   "Somewhere a client call is starting without him.",
   "The chai stall salutes you.",
-  "Two bosses, one scooter, zero chance.",
+  "Two bosses, two XUVs, zero chance.",
   "The GST return has given up too.",
   "Silk Board could not hold him. Nothing can.",
   "Another 500m of glorious unemployment.",
