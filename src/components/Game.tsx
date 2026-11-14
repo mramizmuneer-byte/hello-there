@@ -189,24 +189,24 @@ export default function Game() {
         {/* Home */}
         {s.phase === "home" && ready && (
           <div className="pointer-events-none absolute inset-0 text-white">
-            <div className="absolute inset-x-0 top-0 h-[42%] bg-gradient-to-b from-black/70 via-black/30 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-black/75 to-transparent" />
-            <div className="relative px-5 pt-6 text-center">
-              <h1 className="leading-[0.9]"><span className="block text-[30px] text-white" style={outline}>ESCAPE FROM</span><span className="block text-[78px] text-amber-300" style={{ ...outline, WebkitTextStroke: "3px #2a1406", textShadow: "0 6px 0 #2a1406" }}>M&amp;S</span></h1>
-              <div className="mx-auto mt-1 inline-block rounded-md border border-amber-200 bg-gradient-to-b from-amber-300 to-amber-600 px-3 py-0.5 text-[11px] font-bold text-amber-950 shadow">Murali &amp; Sumeet, Chartered Accountants</div>
-              <p className="mt-2 text-[13px] font-semibold text-white/85">{TAGLINE}</p>
-              {s.best > 0 && <div className="mx-auto mt-2 inline-flex items-center gap-1 rounded-full bg-black/50 px-3 py-1 text-[12px] font-bold text-amber-200">🏆 Best {s.best} m</div>}
+            <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-[20%] bg-gradient-to-t from-black/85 to-transparent" />
+            <div className="relative flex flex-col items-center px-4 pt-5 text-center">
+              <h1 className="leading-[0.85]" style={{ transform: "rotate(-3deg)" }}>
+                <span className="block text-[26px] tracking-widest text-white" style={outline}>RUN · FATHAH ·</span>
+                <span className="block text-[64px] text-amber-300" style={{ ...outline, WebkitTextStroke: "3px #2a1406", textShadow: "0 5px 0 #b45309, 0 9px 0 #2a1406, 0 0 24px rgba(255,190,60,0.55)" }}>RUN!</span>
+              </h1>
+              <p className="mt-1 text-[12px] font-semibold text-white/85" style={{ textShadow: "0 1px 3px #000" }}>{TAGLINE}</p>
+              {s.best > 0 && <div className="mt-1.5 inline-flex items-center gap-1 rounded-full border-2 border-amber-300 bg-black/60 px-3 py-0.5 text-[12px] text-amber-200" style={display}>🏆 BEST {s.best} M</div>}
             </div>
-            <div className="absolute inset-x-0 bottom-[150px] flex justify-center gap-3 text-[10px] font-semibold text-white/80">
-              <span className="rounded-lg bg-black/45 px-2 py-1">⇆ Swipe to change lane</span>
-              <span className="rounded-lg bg-black/45 px-2 py-1">⇡ Jump</span>
-              <span className="rounded-lg bg-black/45 px-2 py-1">⇣ Slide</span>
-            </div>
-            <div className="pointer-events-auto absolute inset-x-0 bottom-5 flex flex-col items-center gap-2">
-              <button onClick={() => eng()?.play()} className="animate-pulse rounded-full bg-amber-400 px-14 py-3 text-4xl text-black shadow-[0_0_30px_rgba(255,200,80,0.7)] active:scale-95" style={display}>{UI.play}</button>
-              <div className="flex gap-2">
-                <button onClick={() => setTeam(true)} className="rounded-full bg-black/55 px-4 py-1.5 text-xs font-semibold">{FAREWELL.heading}</button>
-                <button onClick={toggleSound} className="rounded-full bg-black/55 px-3 py-1.5 text-xs">{muted ? "🔇" : "🔊"}</button>
+            <div className="pointer-events-auto absolute inset-x-0 bottom-3 flex flex-col items-center gap-1.5">
+              <button onClick={() => eng()?.play()} className="rounded-2xl border-b-[6px] border-amber-800 bg-gradient-to-b from-amber-300 to-orange-500 px-14 py-1.5 text-4xl text-amber-950 shadow-[0_0_28px_rgba(255,190,60,0.6)] transition-transform hover:scale-105 active:translate-y-1 active:border-b-2" style={display}>{UI.play}</button>
+              <div className="flex gap-1.5 text-[10px] font-semibold text-white/85">
+                <span className="rounded-md bg-black/50 px-2 py-0.5">⇆ Lane</span>
+                <span className="rounded-md bg-black/50 px-2 py-0.5">⇡ Jump</span>
+                <span className="rounded-md bg-black/50 px-2 py-0.5">⇣ Slide</span>
+                <button onClick={() => setTeam(true)} className="rounded-md bg-black/50 px-2 py-0.5">{FAREWELL.heading}</button>
+                <button onClick={toggleSound} className="rounded-md bg-black/50 px-2 py-0.5">{muted ? "🔇" : "🔊"}</button>
               </div>
               <div className="text-[10px] text-white/55">{CREDIT}</div>
             </div>
