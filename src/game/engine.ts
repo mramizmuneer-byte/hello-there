@@ -2837,11 +2837,11 @@ export class Engine {
 
     ctx.save();
     ctx.globalAlpha = 0.85;
-    drawNameplate(ctx, 0, { x: 66, y: 330, s: 0.55 });
+    drawNameplate(ctx, 0, { x: 56, y: 330, s: 0.4 });
     ctx.restore();
 
-    const feetY = 702;
-    const H = VH * 0.6;
+    const feetY = 690;
+    const H = VH * 0.5;
     const k = H / FRONT_RIG.height;
     ctx.save();
     ctx.globalAlpha = 0.5;
