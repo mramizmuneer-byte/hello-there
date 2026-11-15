@@ -60,7 +60,7 @@ import {
   type Rig,
 } from "./rig";
 import { POSES } from "@/config/anim";
-import { ROAD_SEGMENTS, type RoadSegment, SEGMENT_LABELS, drawNameplate, drawTreeCanopy } from "./scenery";
+import { ROAD_SEGMENTS, type RoadSegment, SEGMENT_LABELS, drawTreeCanopy } from "./scenery";
 import { loadFathu, loadSprite, type Sprite } from "./sprites";
 import xuvBlack from "@/assets/xuv_black.png";
 import xuvWhite from "@/assets/xuv_white.png";
@@ -69,6 +69,10 @@ import { drawCorridorWorld, drawDeadEndWorld, drawRoadWorld } from "./world";
 const TURN_FRAMES = 32;
 const TURN_LEN = 1.3;
 const INTRO_LEN = TURN_LEN + 0.5;
+/** crossfade window: home scene fades out over the game scene */
+const XF_START = TURN_LEN - 0.1;
+/** pause before the "3" so the eye locks on to the new scene */
+const COUNT_DELAY = 0.15;
 
 export type Phase =
   | "home"
@@ -562,6 +566,7 @@ export class Engine {
   play() {
     audio.unlock();
     if (this.phase !== "home") return;
+    this.resetRun();
     this.phase = "intro";
     this.introT = 0;
     audio.play("whoosh");
@@ -572,7 +577,7 @@ export class Engine {
     audio.unlock();
     this.resetRun();
     this.phase = "countdown";
-    this.countT = 0;
+    this.countT = -COUNT_DELAY;
     this.paused = false;
     this.emit(true);
   }
@@ -882,10 +887,9 @@ export class Engine {
       case "intro":
         this.introT += dt;
         if (this.introT > INTRO_LEN) {
-          this.resetRun();
           this.phase = "countdown";
-          this.countT = 0;
-          this.fade = 1;
+          this.countT = -COUNT_DELAY;
+          this.fade = 0;
         }
         this.emit();
         return;
@@ -893,7 +897,7 @@ export class Engine {
         const before = Math.floor(this.countT / 0.8);
         this.countT += dt;
         const after = Math.floor(this.countT / 0.8);
-        if (after !== before || this.countT === dt) {
+        if (this.countT >= 0 && after !== before) {
           if (after < 3) audio.play("tick");
           else if (after === 3) audio.play("go");
         }
@@ -1732,12 +1736,43 @@ export class Engine {
     ctx.save();
     ctx.clearRect(0, 0, VW, VH);
 
-    if (this.phase === "home" || this.phase === "intro") {
+    if (this.phase === "home" || (this.phase === "intro" && this.introT < XF_START)) {
       this.renderHome(ctx);
       this.drawFade(ctx);
       ctx.restore();
       return;
     }
+    if (this.phase === "intro") {
+      // true crossfade: game scene underneath, home scene on top fading out
+      this.renderGame(ctx);
+      const c = ctx.canvas;
+      if (!this.homeBuf || this.homeBuf.width !== c.width || this.homeBuf.height !== c.height) {
+        this.homeBuf = document.createElement("canvas");
+        this.homeBuf.width = c.width;
+        this.homeBuf.height = c.height;
+      }
+      const hc = this.homeBuf.getContext("2d")!;
+      hc.setTransform(1, 0, 0, 1, 0, 0);
+      hc.clearRect(0, 0, c.width, c.height);
+      hc.setTransform(ctx.getTransform());
+      this.renderHome(hc);
+      const a = 1 - smooth(clamp01((this.introT - XF_START) / (INTRO_LEN - XF_START)));
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = a;
+      ctx.drawImage(this.homeBuf, 0, 0);
+      ctx.restore();
+      ctx.restore();
+      return;
+    }
+    this.renderGame(ctx);
+    this.drawFade(ctx);
+    ctx.restore();
+  }
+
+  private homeBuf: HTMLCanvasElement | null = null;
+
+  private renderGame(ctx: CanvasRenderingContext2D) {
 
     const a = this.paused ? 1 : this.alpha;
     this.rx = this.prevLaneX + (this.laneX - this.prevLaneX) * a;
@@ -1800,8 +1835,6 @@ export class Engine {
       this.drawGameOverBosses(ctx);
     }
     if (this.flags.debug) this.drawDebug(ctx);
-    this.drawFade(ctx);
-    ctx.restore();
   }
 
   private drawFade(ctx: CanvasRenderingContext2D) {
@@ -2597,7 +2630,7 @@ export class Engine {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    if (this.phase === "countdown") {
+    if (this.phase === "countdown" && this.countT >= 0) {
       const i = Math.floor(this.countT / 0.8);
       const f = (this.countT % 0.8) / 0.8;
       const label = i < 3 ? String(3 - i) : "GO!";
@@ -2788,7 +2821,9 @@ export class Engine {
 
   private renderHome(ctx: CanvasRenderingContext2D) {
     const intro = this.phase === "intro" ? this.introT : 0;
-    const push = 1 + smooth(intro / INTRO_LEN) * 0.28;
+    // push in, then settle back to 1 so the end frame matches the game camera
+    const pu = clamp01(intro / XF_START);
+    const push = 1 + Math.sin(Math.PI * smooth(pu)) * 0.18;
     ctx.save();
     ctx.translate(CX, VH * 0.55);
     ctx.scale(push, push);
@@ -2835,22 +2870,24 @@ export class Engine {
     ctx.fillStyle = fl;
     ctx.fillRect(0, 440, VW, VH - 440);
 
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    drawNameplate(ctx, 0, { x: 56, y: 330, s: 0.4 });
-    ctx.restore();
-
-    const feetY = 690;
-    const H = VH * 0.5;
+    // ease Fathah from the home pose toward exactly where the runner stands
+    setCamera(0, 0, T.fov);
+    const g0 = project(0, 0, 0);
+    const gameH = T.playerHeight * g0.s * FRAME_SCALE;
+    const m = smooth(clamp01(intro / XF_START));
+    const feetY = 690 + (g0.y - 690) * m;
+    const homeH = VH * 0.5;
+    const H = homeH + (gameH / 1.02 - homeH) * m;
+    const fx = CX + (g0.x - CX) * m;
     const k = H / FRONT_RIG.height;
     ctx.save();
-    ctx.globalAlpha = 0.5;
-    const sh = ctx.createRadialGradient(CX, feetY, 2, CX, feetY, 90);
+    ctx.globalAlpha = 0.5 * (1 - m);
+    const sh = ctx.createRadialGradient(fx, feetY, 2, fx, feetY, 90);
     sh.addColorStop(0, "rgba(0,0,0,0.85)");
     sh.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = sh;
     ctx.beginPath();
-    ctx.ellipse(CX, feetY, 90, 20, 0, 0, Math.PI * 2);
+    ctx.ellipse(fx, feetY, 90, 20, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -2875,15 +2912,15 @@ export class Engine {
       const dw = (dh * fw) / ts.img.height;
       const sway = intro > 0 ? 0 : Math.sin(this.t * 0.75) * 2;
       ctx.save();
-      ctx.shadowColor = "rgba(255,196,130,0.75)";
+      ctx.shadowColor = `rgba(255,196,130,${0.75 * (1 - m)})`;
       ctx.shadowBlur = 22;
-      ctx.drawImage(ts.img, fi * fw, 0, fw, ts.img.height, CX - dw / 2 + sway, feetY - dh, dw, dh);
+      ctx.drawImage(ts.img, fi * fw, 0, fw, ts.img.height, fx - dw / 2 + sway, feetY - dh, dw, dh);
       ctx.restore();
     } else if (rig) {
       ctx.save();
       ctx.shadowColor = "rgba(255,196,130,0.75)";
       ctx.shadowBlur = 22;
-      drawRig(ctx, rig, pose, CX, feetY, k);
+      drawRig(ctx, rig, pose, fx, feetY, k);
       ctx.restore();
     }
     ctx.restore();
@@ -2897,9 +2934,5 @@ export class Engine {
     }
     ctx.globalAlpha = 1;
     if (this.vignette) ctx.drawImage(this.vignette, 0, 0);
-    if (intro > TURN_LEN + 0.15) {
-      ctx.fillStyle = `rgba(10,6,4,${Math.min(1, (intro - TURN_LEN - 0.15) / 0.35)})`;
-      ctx.fillRect(0, 0, VW, VH);
-    }
   }
 }
