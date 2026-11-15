@@ -1,10 +1,10 @@
-# Run Bangalore Run
+# RUN · FATHAH · RUN!
 
-Understand the game.“Escape from M&S” is a portrait, mobile-first endless runner built as a farewell gift for Fathu. He escapes the office balcony, leaps into a tree, and keeps running down a Bangalore road while Murali and Sumeet chase him with “What PAA?!”. It’s React + TypeScript on TanStack Start (Vite) with Tailwind. The whole game is drawn on one HTML5 canvas, with no backend and no audio files.
+Understand the game.“RUN · FATHAH · RUN!” is a portrait, mobile-first endless runner built as a farewell gift for Fathu. He escapes the office balcony, leaps into a tree, and keeps running down a Bangalore road while Murali and Sumeet chase him with “What PAA?!”. It’s React + TypeScript on TanStack Start (Vite) with Tailwind. The whole game is drawn on one HTML5 canvas, with no backend and no audio files.
 
 Gameplay details I confirmed in the code:
 
-You have 3 lives (lives = 3 - hits). The bosses move closer with each hit.
+Two hits and you're caught: the first hit brings the bosses into view, a clean run drops them back.
 
 The best score is stored in localStorage.
 
