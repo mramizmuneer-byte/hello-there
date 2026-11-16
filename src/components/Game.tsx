@@ -154,6 +154,12 @@ export default function Game() {
     };
   }, []);
 
+  // play the intro once the app has loaded; it ends (or is skipped) into the home screen
+  useEffect(() => {
+    if (ready) startIntro();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
+
   useEffect(() => {
     const c = canvasRef.current;
     if (!c) return;
@@ -298,7 +304,7 @@ export default function Game() {
 
         {/* Home */}
         {(s.phase === "home" || s.phase === "intro") && ready && (() => {
-          const leaving = s.phase === "intro" || launching;
+          const leaving = s.phase === "intro";
           return (
           <div className="pointer-events-none absolute inset-0 text-white">
             <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
@@ -312,7 +318,7 @@ export default function Game() {
               {s.best > 0 && <div className="mt-1.5 inline-flex items-center gap-1 rounded-full border-2 border-amber-300 bg-black/60 px-3 py-0.5 text-[12px] text-amber-200" style={display}>🏆 BEST {s.best} M</div>}
             </div>
             <div className={`${leaving ? "pointer-events-none" : "pointer-events-auto"} absolute inset-x-0 bottom-3 flex flex-col items-center gap-1.5 transition-all duration-[250ms] ease-in`} style={{ opacity: leaving ? 0 : 1, transform: leaving ? "translateY(24px)" : "none" }}>
-              <button onClick={startIntro} className={`play-pulse rounded-2xl border-b-[6px] border-amber-800 bg-gradient-to-b from-amber-300 to-orange-500 px-14 py-1.5 text-4xl text-amber-950 transition-transform duration-200 hover:scale-105 active:translate-y-1 active:border-b-2 ${launching ? "scale-110" : ""}`} style={display}>{UI.play}</button>
+              <button onClick={() => eng()?.play()} className="play-pulse rounded-2xl border-b-[6px] border-amber-800 bg-gradient-to-b from-amber-300 to-orange-500 px-14 py-1.5 text-4xl text-amber-950 transition-transform duration-200 hover:scale-105 active:translate-y-1 active:border-b-2" style={display}>{UI.play}</button>
               <div className="flex gap-1.5 text-[10px] font-semibold text-white/85">
                 <span className="rounded-md bg-black/50 px-2 py-0.5">⇆ Lane · ⇡ Jump · ⇣ Slide</span>
                 <button onClick={() => setTeam(true)} className="rounded-md bg-black/50 px-2 py-0.5">{FAREWELL.heading}</button>
@@ -324,7 +330,7 @@ export default function Game() {
           );
         })()}
 
-        {/* Intro video — plays on every PLAY tap; tap anywhere to skip */}
+        {/* Intro video — plays when the app opens; tap anywhere to skip to home */}
         <div
           className={`absolute inset-0 z-20 bg-black transition-opacity ${vid === "on" ? "opacity-100" : "opacity-0"} ${vid === "off" ? "pointer-events-none invisible" : ""}`}
           style={{ transitionDuration: `${vid === "out" ? vidFade : 250}ms` }}
