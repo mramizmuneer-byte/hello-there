@@ -46,7 +46,6 @@ export default function Game() {
   const [vidFade, setVidFade] = useState(700);
   const [skipHint, setSkipHint] = useState(false);
   const [shakeOn, setShakeOn] = useState(false);
-  const [launching, setLaunching] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const introRef = useRef({ startedAt: 0, ending: false, timers: [] as number[] });
 
@@ -80,10 +79,8 @@ export default function Game() {
       };
       requestAnimationFrame(step);
     }
-    engineRef.current?.play();
     window.setTimeout(() => {
       setVid("off");
-      setLaunching(false);
       if (v) {
         v.pause();
         v.volume = 1;
@@ -92,9 +89,8 @@ export default function Game() {
   };
 
   const startIntro = () => {
-    if (vid !== "off" || launching) return;
+    if (vid !== "off") return;
     audio.unlock();
-    setLaunching(true);
     const r = introRef.current;
     r.ending = false;
     r.startedAt = performance.now();
