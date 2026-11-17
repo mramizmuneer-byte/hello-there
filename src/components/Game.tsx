@@ -91,7 +91,8 @@ export default function Game() {
     }
     videoRef.current?.play().catch(() => endIntro(true, true));
     r.timers.push(window.setTimeout(() => {
-      if (!r.started) endIntro(true, true);
+      const v = videoRef.current;
+      if (!r.started && !(v && v.currentTime > 0.05)) endIntro(true, true);
     }, 3000));
     r.timers.push(window.setTimeout(() => setSkipHint(true), 1000));
     r.timers.push(window.setTimeout(() => setSkipHint(false), 4000));
@@ -336,6 +337,10 @@ export default function Game() {
             preload="auto"
             poster={introPoster.url}
             onPlaying={() => { introRef.current.started = true; }}
+            onTimeUpdate={(e) => {
+              const v = e.currentTarget;
+              if (v.duration && v.currentTime >= v.duration - 0.05) endIntro(false);
+            }}
             onEnded={() => endIntro(false)}
             onError={() => endIntro(true, true)}
           >
