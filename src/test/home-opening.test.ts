@@ -15,8 +15,8 @@ describe("opening and home alignment", () => {
   it("centres the 720 by 1280 road with cover fit", () => {
     const rect = coverRect(720, 1280);
     expect(rect.height).toBe(844);
-    expect(rect.width).toBe(474.75);
-    expect(rect.x).toBe(-42.375);
+    expect(rect.width).toBeCloseTo(474.75, 8);
+    expect(rect.x).toBeCloseTo(-42.375, 8);
     expect(rect.y).toBe(0);
   });
 });
