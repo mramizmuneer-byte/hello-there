@@ -1,0 +1,3 @@
+- [x] Replace the launch opening with the supplied video and safe skip/fallback handling.
+- [x] Draw the animated road and precisely positioned Fathah on home; preserve PLAY transition.
+- [x] Add alignment preview, remove obsolete public intro files, and verify the flows.
