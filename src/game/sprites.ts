@@ -1,6 +1,8 @@
 import backAsset from "@/assets/fathu2-back.png";
 import sideAsset from "@/assets/fathu2-side.png";
-import frontAsset from "@/assets/fathu2-front.png";
+import frontPointer from "@/assets/fathu_front_from_intro.png.asset.json";
+
+const frontAsset = frontPointer.url;
 
 export interface Sprite {
   img: HTMLImageElement | null;
