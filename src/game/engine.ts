@@ -28,6 +28,8 @@ import {
   STAGE1_LENGTH,
   STAGE2_LENGTH,
 } from "@/config/game";
+import { HOME, coverRect } from "@/config/home";
+import homePoster from "@/assets/home/home_bg_poster.png.asset.json";
 import turnSheetAsset from "@/assets/fathu-turn-sheet.png";
 import { BACK_RIG, FRONT_RIG, LAYER_RIG, OPTIONAL_FRAMES, RIG_BLEND_TAU, FRAME_SCALE } from "@/config/rig";
 import { TUNING as T } from "@/config/tuning";
@@ -436,6 +438,16 @@ export class Engine {
   cineT = 0;
   introT = 0;
   private turnSheet: Sprite = loadSprite(turnSheetAsset);
+  private homePoster: Sprite = loadSprite(homePoster.url);
+  private homeVideo: HTMLVideoElement | null = null;
+  private homeSpriteOpacity = 0;
+  private homeRevealedAt = Infinity;
+
+  setHomeVideo(video: HTMLVideoElement | null) { this.homeVideo = video; }
+  revealHome(immediate = false) {
+    this.homeRevealedAt = performance.now();
+    this.homeSpriteOpacity = immediate ? 1 : 0;
+  }
   countT = 0;
   dyingT = 0;
   segment: RoadSegment = "avenue";
@@ -585,6 +597,7 @@ export class Engine {
   goHome() {
     this.paused = false;
     this.phase = "home";
+    this.revealHome(true);
     this.timeScale = 1;
     this.fade = 1;
     this.emit(true);
@@ -2829,65 +2842,39 @@ export class Engine {
     ctx.scale(push, push);
     ctx.translate(-CX, -VH * 0.55);
 
-    const bg = backdrop("corridor", VW + 80, VH + 80, 12, 0.42, 0.28);
-    const dx = Math.sin(this.t * 0.12) * 30 - 40;
-    const dy = Math.cos(this.t * 0.09) * 14 - 40;
-    if (bg) ctx.drawImage(bg, dx, dy);
-    else {
-      const g = ctx.createLinearGradient(0, 0, 0, VH);
-      g.addColorStop(0, "#5a4632");
-      g.addColorStop(1, "#1e140c");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, VW, VH);
+    const video = this.homeVideo;
+    const poster = this.homePoster.img;
+    const source = video && video.readyState >= 2 && video.videoWidth ? video : poster;
+    if (source) {
+      const width = source instanceof HTMLVideoElement ? source.videoWidth : source.naturalWidth;
+      const height = source instanceof HTMLVideoElement ? source.videoHeight : source.naturalHeight;
+      if (width && height) {
+        const rect = coverRect(width, height, VW, VH);
+        ctx.drawImage(source, rect.x, rect.y, rect.width, rect.height);
+      }
     }
-    const fg = backdrop("grass", 220, 320, 10, 0.5, 0.3);
-    if (fg) {
-      ctx.globalAlpha = 0.45;
-      ctx.drawImage(fg, VW - 170 + Math.sin(this.t * 0.2) * 16, 420);
-      ctx.globalAlpha = 1;
-    }
+    const elapsed = performance.now() - this.homeRevealedAt;
+    this.homeSpriteOpacity = Math.max(this.homeSpriteOpacity, clamp01(elapsed / HOME.spriteFadeMs));
     ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    for (let i = 0; i < 3; i++) {
-      const x = 20 + i * 70 + Math.sin(this.t * 0.3 + i) * 12;
-      const g = ctx.createLinearGradient(x, 0, x + 160, VH * 0.7);
-      g.addColorStop(0, "rgba(255,214,150,0.14)");
-      g.addColorStop(1, "rgba(255,214,150,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + 40, 0);
-      ctx.lineTo(x + 230, VH * 0.75);
-      ctx.lineTo(x + 130, VH * 0.75);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.restore();
-
-    const fl = ctx.createRadialGradient(CX, 700, 20, CX, 700, 260);
-    fl.addColorStop(0, "rgba(255,190,120,0.35)");
-    fl.addColorStop(1, "rgba(255,190,120,0)");
-    ctx.fillStyle = fl;
-    ctx.fillRect(0, 440, VW, VH - 440);
+    ctx.globalAlpha = this.homeSpriteOpacity;
 
     // ease Fathah from the home pose toward exactly where the runner stands
     setCamera(0, 0, T.fov);
     const g0 = project(0, 0, 0);
     const gameH = T.playerHeight * g0.s * FRAME_SCALE;
     const m = smooth(clamp01(intro / XF_START));
-    const feetY = 690 + (g0.y - 690) * m;
-    const homeH = VH * 0.5;
+    const bob = intro > 0 || elapsed < HOME.breathingDelayMs ? 0 : Math.sin((elapsed - HOME.breathingDelayMs) / 1800) * 1.5;
+    const feetY = HOME.feetY + (g0.y - HOME.feetY) * m + bob;
+    const homeH = HOME.height;
     const H = homeH + (gameH / 1.02 - homeH) * m;
-    const fx = CX + (g0.x - CX) * m;
+    const fx = HOME.centerX + (g0.x - HOME.centerX) * m;
     const k = H / FRONT_RIG.height;
     ctx.save();
-    ctx.globalAlpha = 0.5 * (1 - m);
-    const sh = ctx.createRadialGradient(fx, feetY, 2, fx, feetY, 90);
-    sh.addColorStop(0, "rgba(0,0,0,0.85)");
-    sh.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = sh;
+    ctx.globalAlpha *= 1 - m;
+    ctx.filter = `blur(${HOME.shadowBlur}px)`;
+    ctx.fillStyle = HOME.shadowColor;
     ctx.beginPath();
-    ctx.ellipse(fx, feetY, 90, 20, 0, 0, Math.PI * 2);
+    ctx.ellipse(fx, feetY - bob, HOME.shadowWidth / 2, HOME.shadowHeight / 2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -2902,7 +2889,11 @@ export class Engine {
       }
     }
     const ts = this.turnSheet;
-    if (ts.ready && ts.img) {
+    const front = this.fathu.front;
+    if (intro === 0 && front.ready && front.img) {
+      const dw = H * front.img.width / front.img.height;
+      ctx.drawImage(front.img, fx - dw / 2, feetY - H, dw, H);
+    } else if (ts.ready && ts.img) {
       // real video frames: front -> side -> back turn
       const n = TURN_FRAMES;
       const fw = ts.img.width / n;
@@ -2910,29 +2901,17 @@ export class Engine {
       const fi = Math.min(n - 1, Math.floor(u * n));
       const dh = H * 1.02;
       const dw = (dh * fw) / ts.img.height;
-      const sway = intro > 0 ? 0 : Math.sin(this.t * 0.75) * 2;
+      const sway = 0;
       ctx.save();
-      ctx.shadowColor = `rgba(255,196,130,${0.75 * (1 - m)})`;
-      ctx.shadowBlur = 22;
       ctx.drawImage(ts.img, fi * fw, 0, fw, ts.img.height, fx - dw / 2 + sway, feetY - dh, dw, dh);
       ctx.restore();
     } else if (rig) {
       ctx.save();
-      ctx.shadowColor = "rgba(255,196,130,0.75)";
-      ctx.shadowBlur = 22;
       drawRig(ctx, rig, pose, fx, feetY, k);
       ctx.restore();
     }
     ctx.restore();
 
-    ctx.fillStyle = "rgba(255,236,200,0.6)";
-    for (const d of this.dust) {
-      ctx.globalAlpha = 0.3 + 0.3 * Math.sin(this.t + d.a);
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-    if (this.vignette) ctx.drawImage(this.vignette, 0, 0);
+    ctx.restore();
   }
 }
