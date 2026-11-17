@@ -91,7 +91,8 @@ export default function Game() {
     }
     videoRef.current?.play().catch(() => endIntro(true, true));
     r.timers.push(window.setTimeout(() => {
-      if (!r.started) endIntro(true, true);
+      const v = videoRef.current;
+      if (!r.started && !(v && v.currentTime > 0.05)) endIntro(true, true);
     }, 3000));
     r.timers.push(window.setTimeout(() => setSkipHint(true), 1000));
     r.timers.push(window.setTimeout(() => setSkipHint(false), 4000));
